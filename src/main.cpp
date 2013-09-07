@@ -1263,6 +1263,11 @@ int64 static GetBlockValue(int nHeight, int64 nFees, uint256 prevHash)
 
     // Mining phase: Subsidy is cut in half every SubsidyHalvingInterval
 	std::string cseed_str = prevHash.ToString().substr(4,7);
+
+	// fix the seed issue
+	if(nHeight > 4000)
+		cseed_str = prevHash.ToString().substr(20,7);
+
 	const char* cseed = cseed_str.c_str();
 	long seed = hex2long(cseed);
 	int rand = generateMTRandom(seed, 19200);
@@ -2083,9 +2088,9 @@ bool SetBestChain(CValidationState &state, CBlockIndex* pindexNew)
     nBestChainWork = pindexNew->nChainWork;
     nTimeBestReceived = GetTime();
     nTransactionsUpdated++;
-    printf("SetBestChain: new best=%s  height=%d  log2_work=%.8g  tx=%lu  date=%s progress=%f\n",
+    printf("SetBestChain: new best=%s  height=%d  log2_work=%.8g  tx=%lu  date=%lu progress=%f\n",
       hashBestChain.ToString().c_str(), nBestHeight, log(nBestChainWork.getdouble())/log(2.0), (unsigned long)pindexNew->nChainTx,
-      DateTimeStrFormat("%Y-%m-%d %H:%M:%S", pindexBest->GetBlockTime()).c_str(),
+      pindexBest->GetBlockTime(),
       Checkpoints::GuessVerificationProgress(pindexBest));
 
     // Check the version of the last 100 blocks to see if we need to upgrade:
